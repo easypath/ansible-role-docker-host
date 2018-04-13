@@ -6,8 +6,7 @@ Docker Host
   - Containers will be unable to bind to Docker engine on local UNIX socket; specifically affects managment tools like [Portainer](https://portainer.io/); workaround is to configure Docker engine with TLS
 - Generates TLS certificates and secures Docker engine
   - Configures Docker client to connect using TLS by default, otherwise need to specify TLS cert and key everytime running `docker` command; configured per profile and requires client certificate, see [here](https://docs.docker.com/engine/security/https/#secure-by-default) for more info)
-- Docker engine binds to localhost by default
-- Default container bind address changed from all interfaces (0.0.0.0) to localhost; see [this issue on GitHub](https://github.com/docker/compose/issues/2999) for a known caveat
+- Docker engine binds new containers to localhost by default if no IP is specified
 - Configures Docker Swarm-related firewalld rules
 
 **Note: after configuring TLS, no longer need to prefix `docker` commands with `sudo`**
