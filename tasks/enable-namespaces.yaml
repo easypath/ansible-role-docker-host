@@ -1,0 +1,26 @@
+---
+# Enable user namespaces
+# Sourced from: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/getting_started_with_containers/get_started_with_docker_formatted_container_images#user_namespaces_options
+
+  - name: Enable user namespaces in the kernel (requires reboot to activate)
+    raw: grubby --args="namespace.unpriv_enable=1" --update-kernel=/boot/vmlinuz-{{ansible_kernel}}
+    become: true
+
+  - name: Set user.max_user_namespaces kernel tuneable
+    sysctl:
+      name: user.max_user_namespaces
+      value: 15076
+      state: present
+    become: true
+
+  - name: Assign UID namespace mapping
+    lineinfile:
+      path: /etc/subuid
+      line: dockremap:858585:1000
+    become: true
+
+  - name: Assign GID namespace mapping
+    lineinfile:
+      path: /etc/subgid
+      line: dockremap:858585:1000
+    become: true

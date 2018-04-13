@@ -1,0 +1,71 @@
+---
+# tasks file for docker-host
+
+  - name: Install pre-requisites
+    yum:
+      name:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      state: latest
+    become: yes
+
+  - name: Enable user namespaces
+    import_tasks: enable-namespaces.yaml
+    when: config_user_namespaces|bool
+
+  - name: Enable Docker repo
+    yum_repository:
+      name: docker-ce
+      description: Docker CE repo
+      baseurl: "{{docker_repo_baseurl}}"
+      gpgkey: "{{repo_gpgkey}}"
+    become: yes
+
+  - name: Install Docker CE
+    yum:
+      name: "{{docker_ce_version}}"
+      state: present
+    become: yes
+
+  - name: Create override directory for docker.service
+    file: 
+      path: /etc/systemd/system/docker.service.d
+      state: directory
+      recurse: yes
+    become: yes
+
+  - name: Copy dockerd startup customizations
+    template:
+      src: templates/override.conf.j2
+      dest: /etc/systemd/system/docker.service.d/override.conf
+    become: yes
+
+  - name: Generate certificate and configure Docker daemon for TLS
+    import_tasks: dockerd-tls.yaml
+    when: config_tls
+
+  - name: Configure firewall rules for Docker Swarm
+    import_tasks: firewall-rules.yaml
+    when: config_swarm_fw
+
+  # - name: Resolves potential issues with iptables and Docker (ipv4)
+  #   sysctl:
+  #     name: net.bridge.bridge-nf-call-iptables
+  #     value: 1
+  #     state: present
+  #   become: yes
+  #   #@AB TODO: need to put this, otherwise error:
+  #   #"cannot stat /proc/sys/net/bridge/bridge-nf-call-iptables: No such file or directory"
+  #   ignore_errors: true
+
+  - name: Reload systemctl daemon
+    raw: systemctl daemon-reload
+    become: yes
+
+  - name: Configure Docker to start on boot
+    systemd:
+      name: docker
+      enabled: yes
+      state: started
+    become: yes

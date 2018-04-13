@@ -1,0 +1,18 @@
+---
+# vars file for docker-host
+#docker_ce_version: docker-ce-17.03.2.ce-1.el7.centos
+docker_ce_version: docker-ce-18.03.0.ce-1.el7.centos
+docker_repo_baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+repo_gpgkey: https://download.docker.com/linux/centos/gpg
+fw_zone_name: public
+config_tls: false
+config_swarm_fw: false
+config_user_namespaces: true
+# Do not put trailing slash "/"
+cert_dest_path: /etc/docker-certs
+# 2 years
+cert_valid_days: 730
+cert_key_size: 4096
+profile_user: ansible_user_id
+config_profile_docker_client_tls: true
+docker_engine_bind_ip: 0.0.0.0

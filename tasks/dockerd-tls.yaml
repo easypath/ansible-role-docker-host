@@ -1,0 +1,88 @@
+---
+
+  - name: Create CSR (on control machine)
+    local_action:
+      module: >
+        shell openssl req -newkey rsa:{{cert_key_size}} -nodes -subj "/CN={{inventory_hostname}}"
+        -keyout "{{cert_src_path}}/{{inventory_hostname_short}}.key" -out "{{cert_src_path}}/{{inventory_hostname_short}}.csr"
+    ignore_errors: true
+    when:
+      - cert_src_path is defined
+
+  - name: Generate certificate extensions file (on control machine)
+    local_action:
+      module: template
+      src: templates/cert-extfile.cnf.j2
+      dest: "{{cert_src_path}}/{{inventory_hostname_short}}-extfile.cnf"
+    when:
+      - cert_src_path is defined
+
+  # @AB TODO: using OpenSSL CA serial file does not always generate unique serial when running playbook against multiple hosts
+  - name: Sign cert request by CA (on control machine)
+    local_action:
+      module: >
+        shell openssl x509 -req -sha256 -days {{cert_valid_days}}
+        -CA "{{cert_src_path}}/{{tls_ca_cert}}" -CAkey "{{cert_src_path}}/{{tls_ca_key}}" -set_serial {{ 999999 | random }}
+        -in "{{cert_src_path}}/{{inventory_hostname_short}}.csr" -out "{{cert_src_path}}/{{inventory_hostname_short}}.pem"
+        -extfile "{{cert_src_path}}/{{inventory_hostname_short}}-extfile.cnf"
+    ignore_errors: true
+    when:
+      - cert_src_path is defined
+      - tls_ca_cert is defined
+      - tls_ca_key is defined
+
+  - name: Create folder for Docker server certificates
+    file:
+      path: "{{cert_dest_path}}"
+      state: directory
+      mode: 0750
+      seuser: system_u
+    become: yes
+
+  - name: Copy certificates for Docker server
+    copy: 
+      src: "{{item.src}}"
+      dest: "{{item.dest}}"
+      mode: 0640
+    become: yes
+    with_items:
+      - { src: "{{cert_src_path}}/{{tls_ca_cert}}", dest: "{{cert_dest_path}}/{{tls_ca_cert}}" }
+      - { src: "{{cert_src_path}}/{{inventory_hostname_short}}.pem", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.pem" }
+      - { src: "{{cert_src_path}}/{{inventory_hostname_short}}.key", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.key" }
+    when:
+      - cert_src_path is defined
+      - tls_ca_cert is defined
+
+  - name: Create folder for client certificates
+    file:
+      path: "{{ ansible_env.HOME }}/.docker"
+      state: directory
+      mode: 0750
+    become_user: "{{profile_user}}"
+    when:
+      - config_profile_docker_client_tls
+
+  - name: Copy client certificates to profile; enables Docker client to connect using TLS by default
+    copy: 
+      src: "{{item.src}}"
+      dest: "{{item.dest}}"
+      mode: 0640
+    with_items:
+      - { src: "{{cert_src_path}}/{{tls_ca_cert}}", dest: "{{ ansible_env.HOME }}/.docker/ca.pem" }
+      - { src: "{{cert_src_path}}/{{tls_client_cert}}", dest: "{{ ansible_env.HOME }}/.docker/cert.pem" }
+      - { src: "{{cert_src_path}}/{{tls_client_key}}", dest: "{{ ansible_env.HOME }}/.docker/key.pem" }
+    become_user: "{{profile_user}}"
+    when:
+      - config_profile_docker_client_tls
+      - cert_src_path is defined
+      - tls_ca_cert is defined
+      - tls_client_cert is defined
+      - tls_client_key is defined
+
+  - name: Update Docker environment variables in profile
+    lineinfile:
+      path: "{{ ansible_env.HOME }}/.bashrc"
+      line: export DOCKER_HOST=tcp://{{docker_engine_bind_ip}}:2376 DOCKER_TLS_VERIFY=1
+    become_user: "{{profile_user}}"
+    when:
+      - config_profile_docker_client_tls

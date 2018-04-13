@@ -1,0 +1,54 @@
+---
+  # Add rules
+  - name: Add FW rule - Docker daemon (TLS) 2376/tcp
+    firewalld:
+      zone: "{{fw_zone_name}}"
+      port: 2376/tcp
+      permanent: true
+      state: enabled
+    become: yes
+    when: config_tls
+
+  - name: Add FW rule - Docker Swarm cluster management 2377/tcp
+    firewalld:
+      zone: "{{fw_zone_name}}"
+      port: 2377/tcp
+      permanent: true
+      state: enabled
+    become: yes
+
+  - name: Add FW rule - Docker Swarm node communications 7946/tcp
+    firewalld:
+      zone: "{{fw_zone_name}}"
+      port: 7946/tcp
+      permanent: true
+      state: enabled
+    become: yes
+
+  - name: Add FW rule - Docker Swarm node communications 7946/udp
+    firewalld:
+      zone: "{{fw_zone_name}}"
+      port: 7946/udp
+      permanent: true
+      state: enabled
+    become: yes
+
+  - name: Add FW rule - Docker Swarm overlay network traffic 4789/udp
+    firewalld:
+      zone: "{{fw_zone_name}}"
+      port: 4789/udp
+      permanent: true
+      state: enabled
+    become: yes
+
+  - name: Add FW rule - Docker Swarm overlay traffic encryption
+    shell: firewall-cmd --permanent --zone={{fw_zone_name}} --add-rich-rule="rule protocol value=esp accept"
+    become: yes
+    ignore_errors: yes
+
+  - name: Restart firewalld
+    systemd:
+      name: firewalld
+      enabled: yes
+      state: restarted
+    become: yes

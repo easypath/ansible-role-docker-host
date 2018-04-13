@@ -1,0 +1,13 @@
+[Service]
+
+# Need this line to "blank out" default config
+ExecStart=
+
+# Containers will bind to 0.0.0.0 (all interfaces) by default, this forces binding to localhost;
+# @ AB TODO: docker-compose currently ignores this setting and will keep binding to 0.0.0.0;
+# see https://github.com/docker/compose/issues/2999
+{% if config_tls %}
+ExecStart=/usr/bin/dockerd --tlsverify --tlscacert={{cert_dest_path}}/{{tls_ca_cert}} --tlscert={{cert_dest_path}}/{{inventory_hostname_short}}.pem --tlskey={{cert_dest_path}}/{{inventory_hostname_short}}.key -H {{docker_engine_bind_ip}}:2376 --ip 127.0.0.1 {% if config_user_namespaces %}--userns-remap=default{% endif %}
+{% else %}
+ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock --ip 127.0.0.1 {% if config_user_namespaces %}--userns-remap=default{% endif %}
+{% endif %}
