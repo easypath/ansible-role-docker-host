@@ -19,11 +19,11 @@
       mode: 0640
     become: yes
     with_items:
-      - { src: "{{cert_src_path}}/{{tls_ca_cert}}", dest: "{{cert_dest_path}}/{{tls_ca_cert}}" }
-      - { src: "{{cert_src_path}}/{{inventory_hostname_short}}.pem", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.pem" }
-      - { src: "{{cert_src_path}}/{{inventory_hostname_short}}.key", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.key" }
+      - { src: "{{cert_dir}}/{{tls_ca_cert}}", dest: "{{cert_dest_path}}/{{tls_ca_cert}}" }
+      - { src: "{{cert_dir}}/{{inventory_hostname_short}}.pem", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.pem" }
+      - { src: "{{cert_dir}}/{{inventory_hostname_short}}.key", dest: "{{cert_dest_path}}/{{inventory_hostname_short}}.key" }
     when:
-      - cert_src_path is defined
+      - cert_dir is defined
       - tls_ca_cert is defined
 
   - name: Create folder for client certificates
@@ -41,13 +41,13 @@
       dest: "{{item.dest}}"
       mode: 0640
     with_items:
-      - { src: "{{cert_src_path}}/{{tls_ca_cert}}", dest: "{{ ansible_env.HOME }}/.docker/ca.pem" }
-      - { src: "{{cert_src_path}}/{{tls_client_cert}}", dest: "{{ ansible_env.HOME }}/.docker/cert.pem" }
-      - { src: "{{cert_src_path}}/{{tls_client_key}}", dest: "{{ ansible_env.HOME }}/.docker/key.pem" }
+      - { src: "{{cert_dir}}/{{tls_ca_cert}}", dest: "{{ ansible_env.HOME }}/.docker/ca.pem" }
+      - { src: "{{cert_dir}}/{{tls_client_cert}}", dest: "{{ ansible_env.HOME }}/.docker/cert.pem" }
+      - { src: "{{cert_dir}}/{{tls_client_key}}", dest: "{{ ansible_env.HOME }}/.docker/key.pem" }
     become_user: "{{profile_user}}"
     when:
       - config_profile_docker_client_tls
-      - cert_src_path is defined
+      - cert_dir is defined
       - tls_ca_cert is defined
       - tls_client_cert is defined
       - tls_client_key is defined
