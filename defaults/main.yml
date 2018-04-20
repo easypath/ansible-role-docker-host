@@ -13,3 +13,5 @@ cert_dest_path: /etc/docker-certs
 profile_user: ansible_user_id
 config_profile_docker_client_tls: true
 docker_engine_bind_ip: 0.0.0.0
+# Default location of generated certs by easypath.docker-host Galaxy role
+cert_src_path: ./certs
