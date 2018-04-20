@@ -13,24 +13,13 @@ Docker Host
 **Note:** after configuring TLS, no longer need to prefix `docker` commands with `sudo`
 
 
-Requirements
-------------
-None.
-
-
 Role Variables
 --------------
 - See `defaults/main.yml`
 
 
-Dependencies
-------------
-None.
-
-
 Example Playbook
 ----------------
-
 ```
 - hosts: all
   vars_prompt:
