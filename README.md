@@ -9,7 +9,8 @@ Docker Host
 - Docker engine binds new containers to localhost by default if no IP is specified
 - Configures Docker Swarm-related firewalld rules
 
-**Note: after configuring TLS, no longer need to prefix `docker` commands with `sudo`**
+**WARNING: re-running certificate generation in the same output folder will overwrite any existing certs and keys!**
+**Note:** after configuring TLS, no longer need to prefix `docker` commands with `sudo`
 
 
 Requirements
@@ -34,9 +35,9 @@ Example Playbook
 - hosts: all
   vars_prompt:
     - name: "config_tls"
-      prompt: "> Generate certificate and configure Docker engine for TLS"
+      prompt: "> Generate certificate and configure Docker engine for TLS? WARNING: re-running this will overwrite any existing certs and keys!"
       private: no
-      default: true
+      default: false
 
     - name: "config_swarm_fw"
       prompt: "> Configure firewall rules for Docker Swarm?"
