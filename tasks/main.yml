@@ -41,13 +41,13 @@
       dest: /etc/systemd/system/docker.service.d/override.conf
     become: yes
 
-  - name: Generate certificate and configure Docker daemon for TLS
+  - name: Configure Docker daemon for TLS
     import_tasks: dockerd-tls.yaml
-    when: config_tls
+    when: config_tls|bool
 
   - name: Configure firewall rules for Docker Swarm
     import_tasks: firewall-rules.yaml
-    when: config_swarm_fw
+    when: config_swarm_fw|bool
 
   # - name: Resolves potential issues with iptables and Docker (ipv4)
   #   sysctl:

@@ -1,4 +1,9 @@
 ---
+  - name: Generate certs (on control machine); requires Galaxy role "easypath.generate-tls-certs"
+    import_role: 
+      name: easypath.generate-tls-certs
+    when:
+      - generate_tls_certs|bool
 
   - name: Create folder for Docker server certificates
     file:
@@ -7,10 +12,6 @@
       mode: 0750
       seuser: system_u
     become: yes
-
-  - name: Generate certs (on control machine); requires Galaxy role "easypath.generate-tls-certs"
-    import_role: 
-      name: easypath.generate-tls-certs
 
   - name: Copy certificates to Docker server
     copy: 

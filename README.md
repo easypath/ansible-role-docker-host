@@ -23,8 +23,13 @@ Example Playbook
 ```
 - hosts: all
   vars_prompt:
+    - name: "generate_tls_certs"
+      prompt: "> Generate TLS certificates and keys? WARNING: re-running this will overwrite any existing certs and keys!"
+      private: no
+      default: false
+
     - name: "config_tls"
-      prompt: "> Generate certificate and configure Docker engine for TLS? WARNING: re-running this will overwrite any existing certs and keys!"
+      prompt: "> Configure Docker engine for TLS?"
       private: no
       default: false
 
