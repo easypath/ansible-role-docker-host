@@ -1,16 +1,19 @@
 Docker Host
 ===========
-- Installs Docker Community Edition (CE) on CentOS 7.4
-- Pre-configured with [user namespaces](https://docs.docker.com/engine/security/userns-remap/) for increased security. **NOTE:** reboot is required to activate kernel changes.
+- Installs Docker Community Edition (CE) on CentOS 7
+
+- Pre-configured with [user namespaces](https://docs.docker.com/engine/security/userns-remap/) for increased security.
+  - **NOTE:** reboot is required to activate kernel changes.
   - After user namespaces are enabled, host bind mounts will no longer work
   - Containers will be unable to bind to Docker engine on local UNIX socket; specifically affects managment tools like [Portainer](https://portainer.io/); workaround is to configure Docker engine with TLS
-- Generates TLS certificates and secures Docker engine (requires Galaxy role [easypath.generate-tls-certs](https://galaxy.ansible.com/easypath/generate-tls-certs/))
+
+- Generates TLS certificates and secures Docker engine:
+  - Requires Galaxy role [easypath.generate-tls-certs](https://galaxy.ansible.com/easypath/generate-tls-certs/)
   - Configures Docker client to connect using TLS by default, otherwise need to specify TLS cert and key everytime running `docker` command; configured per profile and requires client certificate, see [here](https://docs.docker.com/engine/security/https/#secure-by-default) for more info)
+  - After configuring TLS, no longer need to prefix `docker` commands with `sudo`
+
 - Docker engine binds new containers to localhost by default if no IP is specified
 - Configures Docker Swarm-related firewalld rules
-
-**WARNING: re-running certificate generation in the same output folder will overwrite any existing certs and keys!**
-**Note:** after configuring TLS, no longer need to prefix `docker` commands with `sudo`
 
 
 Role Variables
@@ -45,7 +48,7 @@ Example Playbook
 
   tasks:
     - name: Install Docker
-      import_role: 
+      import_role:
         name: docker-host
 
     - name: Reboot server (required to activate kernel changes)
@@ -64,4 +67,3 @@ BSD
 Author Information
 ------------------
 [EasyPath IT Solutions Inc.](https://www.easypath.ca)
-
